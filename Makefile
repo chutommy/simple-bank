@@ -11,7 +11,7 @@ dropdb:
 
 # make create-migration FILE=[migration name]
 newmigration:
-	migrate create -ext sql -dir db/migration -seq $(FILE)
+	migrate create -ext sql -dir db/migration -seq $(FILE_NAME)
 
 migrateup:
 	migrate -path db/migration -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose up
