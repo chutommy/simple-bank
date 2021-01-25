@@ -1,4 +1,4 @@
-.PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc
+.PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc test
 
 postgres:
 	docker run -p 5433:5432 --env POSTGRES_PASSWORD=simplebankpassword --name postgres12 postgres:12-alpine
@@ -21,3 +21,6 @@ migratedown:
 
 sqlc:
 	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
+
+test:
+	go test -v -cover ./...
