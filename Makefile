@@ -1,4 +1,4 @@
-.PHONY: postgres createdb dropdb newmigration migrateup migratedown
+.PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc
 
 postgres:
 	docker run -p 5433:5432 --env POSTGRES_PASSWORD=simplebankpassword --name postgres12 postgres:12-alpine
@@ -9,7 +9,7 @@ createdb:
 dropdb:
 	docker exec -it postgres12 dropdb --username=postgres simple_bank
 
-# make create-migration FILE=[migration name]
+# make create-migration FILE_NAME=[migration name]
 newmigration:
 	migrate create -ext sql -dir db/migration -seq $(FILE_NAME)
 
@@ -18,3 +18,6 @@ migrateup:
 
 migratedown:
 	migrate -path db/migration -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose down
+
+sqlc:
+	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
