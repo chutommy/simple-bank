@@ -10,9 +10,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var (
+const (
 	dbDriver = "postgres"
-	dbSource = "postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable"
+	dbSource = "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable"
 )
 
 var testQueries *db.Queries
