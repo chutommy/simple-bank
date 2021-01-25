@@ -9,15 +9,15 @@ createdb:
 dropdb:
 	docker exec -it postgres12 dropdb --username=postgres simple_bank
 
-# make create-migration FILE_NAME=[migration name]
+# make create-migration FILENAME=[migration name]
 newmigration:
-	migrate create -ext sql -dir db/migration -seq $(FILE_NAME)
+	docker run --rm -v $(PWD)/db/migration:/migrations --network host migrate/migrate create -ext sql -dir /migrations -seq $(FILENAME)
 
 migrateup:
-	migrate -path db/migration -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose up
+	docker run --rm -v $(PWD)/db/migration:/migrations --network host migrate/migrate -path /migrations -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose down
+	docker run --rm -v $(PWD)/db/migration:/migrations --network host migrate/migrate -path /migrations -database "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable" -verbose drop -f
 
 sqlc:
 	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
