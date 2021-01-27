@@ -92,13 +92,14 @@ func TestQueries_UpdateEntryAmount(t *testing.T) {
 	// update entry
 	entry2, err := testQueries.UpdateEntryAmount(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, entry2)
 
 	// check values
-	assert.Equal(t, entry1.ID, entry2.ID)
-	assert.Equal(t, entry1.AccountID, entry2.AccountID)
-	assert.Equal(t, arg.Amount, entry2.Amount)
-	assert.Equal(t, entry1.CreatedAt, entry2.CreatedAt)
+	if assert.NotEmpty(t, entry2) {
+		assert.Equal(t, entry1.ID, entry2.ID)
+		assert.Equal(t, entry1.AccountID, entry2.AccountID)
+		assert.Equal(t, arg.Amount, entry2.Amount)
+		assert.Equal(t, entry1.CreatedAt, entry2.CreatedAt)
+	}
 }
 
 func TestQueries_DeleteEntry(t *testing.T) {
@@ -110,6 +111,6 @@ func TestQueries_DeleteEntry(t *testing.T) {
 
 	// check the deleted object does not exist anymore
 	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
-	require.ErrorIs(t, err, sql.ErrNoRows)
-	require.Empty(t, entry2)
+	assert.ErrorIs(t, err, sql.ErrNoRows)
+	assert.Empty(t, entry2)
 }

@@ -47,13 +47,14 @@ func TestQueries_GetTransfer(t *testing.T) {
 
 	transfer2, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
 	require.NoError(t, err)
-	require.NotEmpty(t, transfer2)
 
-	assert.Equal(t, transfer1.ID, transfer2.ID)
-	assert.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
-	assert.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
-	assert.Equal(t, transfer1.Amount, transfer2.Amount)
-	assert.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+	if assert.NotEmpty(t, transfer2) {
+		assert.Equal(t, transfer1.ID, transfer2.ID)
+		assert.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
+		assert.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
+		assert.Equal(t, transfer1.Amount, transfer2.Amount)
+		assert.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+	}
 }
 
 func TestQueries_ListTransfers(t *testing.T) {
@@ -95,13 +96,14 @@ func TestQueries_UpdateTransfer(t *testing.T) {
 
 	transfer2, err := testQueries.UpdateTransfer(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, transfer2)
 
-	assert.Equal(t, transfer1.ID, transfer2.ID)
-	assert.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
-	assert.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
-	assert.Equal(t, arg.Amount, transfer2.Amount)
-	assert.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+	if assert.NotEmpty(t, transfer2) {
+		assert.Equal(t, transfer1.ID, transfer2.ID)
+		assert.Equal(t, transfer1.FromAccountID, transfer2.FromAccountID)
+		assert.Equal(t, transfer1.ToAccountID, transfer2.ToAccountID)
+		assert.Equal(t, arg.Amount, transfer2.Amount)
+		assert.Equal(t, transfer1.CreatedAt, transfer2.CreatedAt)
+	}
 }
 
 func TestQueries_DeleteTransfer(t *testing.T) {
@@ -113,6 +115,6 @@ func TestQueries_DeleteTransfer(t *testing.T) {
 	require.NoError(t, err)
 
 	transfer2, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
-	require.ErrorIs(t, err, sql.ErrNoRows)
-	require.Empty(t, transfer2)
+	assert.ErrorIs(t, err, sql.ErrNoRows)
+	assert.Empty(t, transfer2)
 }
