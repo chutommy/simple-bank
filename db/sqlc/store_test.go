@@ -85,8 +85,38 @@ func TestStore_TransferTx(t *testing.T) {
 		_, err = testQueries.GetEntry(context.Background(), transfer.ToAccountID)
 		require.NoError(t, err)
 
-		// TODO:
-		//   - check fromaccount
-		//   - check toaccount
+		// accounts
+		fromAccount := result.FromAccount
+		if assert.NotEmpty(t, fromAccount) {
+			assert.Equal(t, arg.FromAccountID, fromAccount.ID)
+		}
+
+		_, err = testQueries.GetAccount(context.Background(), fromAccount.ID)
+		require.NoError(t, err)
+
+		toAccount := result.ToAccount
+		if assert.NotEmpty(t, toAccount) {
+			assert.Equal(t, arg.ToAccountID, toAccount.ID)
+		}
+
+		_, err = testQueries.GetAccount(context.Background(), toAccount.ID)
+		require.NoError(t, err)
+
+		// accounts' balances
+		diff1 := account1.Balance - fromAccount.Balance
+		diff2 := account2.Balance - toAccount.Balance
+
+		assert.Equal(t, arg.Amount*int64(i+1), diff1)
+		assert.Equal(t, -arg.Amount*int64(i+1), diff2)
 	}
+
+	// check final accounts
+	updatedFromAccount, err := testQueries.GetAccount(context.Background(), arg.FromAccountID)
+	require.NoError(t, err)
+
+	updatedToAccount, err := testQueries.GetAccount(context.Background(), arg.ToAccountID)
+	require.NoError(t, err)
+
+	assert.Equal(t, account1.Balance-arg.Amount*int64(n), updatedFromAccount.Balance)
+	assert.Equal(t, account2.Balance+arg.Amount*int64(n), updatedToAccount.Balance)
 }
