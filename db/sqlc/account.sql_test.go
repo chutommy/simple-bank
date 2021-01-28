@@ -57,6 +57,23 @@ func TestQueries_GetAccount(t *testing.T) {
 	}
 }
 
+func TestQueries_GetAccountForUpdate(t *testing.T) {
+	acc1 := createRandomAccount(t)
+
+	// get account
+	acc2, err := testQueries.GetAccountForUpdate(context.Background(), acc1.ID)
+	require.NoError(t, err)
+
+	// compare values
+	if assert.NotEmpty(t, acc2) {
+		assert.Equal(t, acc1.ID, acc2.ID)
+		assert.Equal(t, acc1.Owner, acc2.Owner)
+		assert.Equal(t, acc1.Balance, acc2.Balance)
+		assert.Equal(t, acc1.Currency, acc2.Currency)
+		assert.Equal(t, acc1.CreatedAt, acc2.CreatedAt)
+	}
+}
+
 func TestQueries_ListAccounts(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		createRandomAccount(t)
