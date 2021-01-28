@@ -93,15 +93,30 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 			return fmt.Errorf("failed to create an entry for the receiver: %w", err)
 		}
 
-		// // accounts
-		// TODO: update account's balances
-		// if result.FromAccount, err = q.GetAccount(ctx, arg.FromAccountID); err != nil {
-		// 	return fmt.Errorf("failed to get an account of the sender: %w", err)
-		// }
-		//
-		// if result.ToAccount, err = q.GetAccount(ctx, arg.ToAccountID); err != nil {
-		// 	return fmt.Errorf("failed to get an account of the receiver: %w", err)
-		// }
+		// accounts
+		fromAccount, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+		if err != nil {
+			return fmt.Errorf("failed to get an account of the sender: %w", err)
+		}
+
+		if result.FromAccount, err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
+			ID:      fromAccount.ID,
+			Balance: fromAccount.Balance - arg.Amount,
+		}); err != nil {
+			return fmt.Errorf("cannot update sender's balance: %w", err)
+		}
+
+		toAccount, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
+		if err != nil {
+			return fmt.Errorf("failed to get an account of the receiver: %w", err)
+		}
+
+		if result.ToAccount, err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
+			ID:      toAccount.ID,
+			Balance: toAccount.Balance + arg.Amount,
+		}); err != nil {
+			return fmt.Errorf("cannot update receiver's balance: %w", err)
+		}
 
 		return nil
 	})
