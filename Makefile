@@ -1,7 +1,7 @@
 .PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc test
 
 postgres:
-	docker run -p 5433:5432 --env POSTGRES_PASSWORD=simplebankpassword --name postgres12 postgres:12-alpine
+	docker run -p 5433:5432 --env POSTGRES_PASSWORD=simplebankpassword --name postgres12 -d postgres:12-alpine
 
 createdb:
 	docker exec -it postgres12 createdb --username=postgres --owner=postgres simple_bank
