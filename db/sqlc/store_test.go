@@ -2,8 +2,10 @@ package db_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	db "github.com/chutified/simple-bank/db/sqlc"
 	"github.com/chutified/simple-bank/util"
@@ -43,10 +45,47 @@ func TestStore_TransferTx(t *testing.T) {
 		result := <-results
 		require.NotEmpty(t, result)
 
+		// transfer
+		transfer := result.Transfer
+		if assert.NotEmpty(t, transfer) {
+			assert.Equal(t, arg.FromAccountID, transfer.FromAccountID)
+			assert.Equal(t, arg.ToAccountID, transfer.ToAccountID)
+			assert.Equal(t, arg.Amount, transfer.Amount)
+
+			assert.NotZero(t, transfer.ID)
+			assert.NotZero(t, transfer.CreatedAt)
+		}
+
+		_, err = testQueries.GetTransfer(context.Background(), transfer.ID)
+		require.NoError(t, err)
+
+		// entryFrom
+		entryFrom := result.FromEntry
+		if assert.NotEmpty(t, entryFrom) {
+			assert.Equal(t, arg.FromAccountID, entryFrom.AccountID)
+			assert.Equal(t, arg.Amount, -entryFrom.Amount)
+
+			assert.NotZero(t, entryFrom.ID)
+			assert.NotZero(t, entryFrom.CreatedAt)
+		}
+
+		_, err = testQueries.GetEntry(context.Background(), transfer.FromAccountID)
+		require.NoError(t, err)
+
+		// entryTo
+		entryTo := result.ToEntry
+		if assert.NotEmpty(t, entryTo) {
+			assert.Equal(t, arg.ToAccountID, entryTo.AccountID)
+			assert.Equal(t, arg.Amount, entryTo.Amount)
+
+			assert.NotZero(t, entryTo.ID)
+			assert.NotZero(t, entryTo.CreatedAt)
+		}
+
+		_, err = testQueries.GetEntry(context.Background(), transfer.ToAccountID)
+		require.NoError(t, err)
+
 		// TODO:
-		//   - check transfer
-		//   - check fromentry
-		//   - check toentry
 		//   - check fromaccount
 		//   - check toaccount
 	}
