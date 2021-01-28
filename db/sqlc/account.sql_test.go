@@ -117,6 +117,28 @@ func TestQueries_UpdateAccountBalance(t *testing.T) {
 	}
 }
 
+func TestQueries_AddAccountBalance(t *testing.T) {
+	acc1 := createRandomAccount(t)
+
+	arg := db.AddAccountBalanceParams{
+		ID:     acc1.ID,
+		Amount: util.RandomBalance(),
+	}
+
+	// update balance
+	acc2, err := testQueries.AddAccountBalance(context.Background(), arg)
+	require.NoError(t, err)
+
+	// compare value
+	if assert.NotEmpty(t, acc2) {
+		assert.Equal(t, acc1.ID, acc2.ID)
+		assert.Equal(t, acc1.Owner, acc2.Owner)
+		assert.Equal(t, acc1.Balance+arg.Amount, acc2.Balance)
+		assert.Equal(t, acc1.Currency, acc2.Currency)
+		assert.Equal(t, acc1.CreatedAt, acc2.CreatedAt)
+	}
+}
+
 func TestQueries_DeleteAccount(t *testing.T) {
 	acc1 := createRandomAccount(t)
 
