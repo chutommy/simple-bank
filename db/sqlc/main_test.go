@@ -15,8 +15,10 @@ const (
 	dbSource = "postgresql://postgres:simplebankpassword@localhost:5433/simple_bank?sslmode=disable"
 )
 
-var testQueries *db.Queries
-var testDB *sql.DB
+var (
+	testQueries *db.Queries
+	testDB      *sql.DB
+)
 
 // TestMain connects to the database and initializes testQueries.
 func TestMain(m *testing.M) {
