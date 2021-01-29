@@ -16,14 +16,13 @@ type createAccountRequest struct {
 
 func (s *Server) createAccount(c *gin.Context) {
 	var req createAccountRequest
-
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
 		return
 	}
 
+	// store the new account into the database
 	params := db.CreateAccountParams{
 		Owner:    req.Owner,
 		Balance:  0,
