@@ -69,7 +69,7 @@ func TestStore_TransferTx(t *testing.T) {
 			assert.NotZero(t, entryFrom.CreatedAt)
 		}
 
-		_, err = testQueries.GetEntry(context.Background(), transfer.FromAccountID)
+		_, err = testQueries.GetEntry(context.Background(), entryFrom.ID)
 		require.NoError(t, err)
 
 		// entryTo
@@ -82,7 +82,7 @@ func TestStore_TransferTx(t *testing.T) {
 			assert.NotZero(t, entryTo.CreatedAt)
 		}
 
-		_, err = testQueries.GetEntry(context.Background(), transfer.ToAccountID)
+		_, err = testQueries.GetEntry(context.Background(), entryTo.ID)
 		require.NoError(t, err)
 
 		// accounts
