@@ -12,6 +12,7 @@ func getRouter(s *Server) *gin.Engine {
 
 	r.POST("/accounts", s.createAccount)
 	r.GET("/accounts/:id", s.getAccountByID)
+	r.GET("/accounts", s.listAccounts)
 
 	return r
 }
