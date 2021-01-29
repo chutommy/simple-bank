@@ -14,13 +14,7 @@ type Server struct {
 // NewServer constructs a new HTTP Server and setup the routing.
 func NewServer(store *db.Store) *Server {
 	s := &Server{store: store}
-
-	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
-
-	r.POST("/accounts", s.createAccount)
-
-	s.router = r
+	s.router = getRouter(s)
 
 	return s
 }
