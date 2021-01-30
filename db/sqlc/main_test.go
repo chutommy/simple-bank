@@ -6,13 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/chutified/simple-bank/config"
 	db "github.com/chutified/simple-bank/db/sqlc"
 	_ "github.com/lib/pq"
-)
-
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://postgres:simplebankpassword@localhost:5432/simple_bank?sslmode=disable"
 )
 
 var (
@@ -22,10 +18,13 @@ var (
 
 // TestMain connects to the database and initializes testQueries.
 func TestMain(m *testing.M) {
-	var err error
+	cfg, _, err := config.LoadConfig("../..")
+	if err != nil {
+		log.Fatalf("cannot load configuration file: %v", err)
+	}
 
 	// get db connection
-	testDB, err = sql.Open(dbDriver, dbSource)
+	testDB, err = sql.Open(cfg.DBDriver, cfg.DBSource)
 	if err != nil {
 		log.Fatalf("cannot connect to database: %v", err)
 	}
