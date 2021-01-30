@@ -4,31 +4,60 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/chutified/simple-bank/api"
+	"github.com/chutified/simple-bank/config"
 	db "github.com/chutified/simple-bank/db/sqlc"
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://postgres:simplebankpassword@localhost:5432/simple_bank?sslmode=disable"
-
-	serverAddress = "0.0.0.0:8080"
-)
-
 func main() {
-	dbConn, err := sql.Open(dbDriver, dbSource)
+	// load config
+	cfg, upd, err := config.LoadConfig(".")
 	if err != nil {
-		log.Fatal(fmt.Errorf("cannot connect to db: %w", err))
+		log.Fatal(fmt.Errorf("can not load config file: %w", err))
 	}
 
-	store := db.NewStore(dbConn)
+	for {
+		// connect to db
+		dbConn, err := sql.Open(cfg.DBDriver, cfg.DBSource)
+		if err != nil {
+			log.Fatal(fmt.Errorf("cannot connect to db: %w", err))
+		}
 
-	server := api.NewServer(store)
+		store := db.NewStore(dbConn)
 
-	err = server.Start(serverAddress)
-	if err != nil {
-		log.Fatal(fmt.Errorf("failed to start the server: %w", err))
+		server := api.NewServer(store)
+
+		// run the server concurrently
+		go func() {
+			fmt.Println("Starting the server...")
+
+			if err := server.Start(cfg.ServerAddress); err != nil {
+				log.Fatal(fmt.Errorf("failed to start the server: %w", err))
+			}
+		}()
+
+		// init quit channel
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case <-quit:
+			break // exit the loop
+		case <-upd:
+			fmt.Println("Config file updated...")
+			fmt.Println("Restating the server...")
+		}
+
+		if err := server.Stop(); err != nil {
+			log.Fatal(fmt.Errorf("unsuccessfully closed server: %w", err))
+		}
+
+		// close database connection
+		_ = dbConn.Close()
 	}
 }
