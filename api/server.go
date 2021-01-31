@@ -24,13 +24,17 @@ type Server struct {
 	store  db.Store
 	router *gin.Engine
 
-	srv *http.Server
+	Srv *http.Server
 }
 
 // NewServer constructs a new HTTP Server and setup the routing.
 func NewServer(store db.Store) *Server {
 	s := &Server{store: store}
 	s.router = getRouter(s)
+
+	s.Srv = &http.Server{
+		Handler: s.router,
+	}
 
 	return s
 }
@@ -43,12 +47,9 @@ func (s *Server) Start(addr string) error {
 		return ErrInvalidAddress
 	}
 
-	s.srv = &http.Server{
-		Addr:    fmt.Sprintf(":%s", addrSplit[1]),
-		Handler: s.router,
-	}
+	s.Srv.Addr = fmt.Sprintf(":%s", addrSplit[1])
 
-	return s.srv.ListenAndServe()
+	return s.Srv.ListenAndServe()
 }
 
 // Stop gracefully shutdowns the server.
@@ -56,7 +57,7 @@ func (s *Server) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := s.srv.Shutdown(ctx); err != nil {
+	if err := s.Srv.Shutdown(ctx); err != nil {
 		return ErrServerShutdownTimeout
 	}
 
