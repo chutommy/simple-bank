@@ -7,8 +7,6 @@ import (
 // getRouter sets up the routing for the given Server and returns
 // the constructed gin router.
 func getRouter(s *Server) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
-
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 
