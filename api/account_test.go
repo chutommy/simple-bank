@@ -302,6 +302,112 @@ func TestServer_ListAccounts(t *testing.T) {
 	}
 }
 
+func TestServer_UpdateAccount(t *testing.T) {
+	account1 := db.Account{
+		ID:       util.RandomInt(1, 1024),
+		Owner:    util.RandomOwner(),
+		Balance:  util.RandomBalance(),
+		Currency: util.RandomCurrency(),
+	}
+	account2 := db.Account{
+		ID:       account1.ID,
+		Owner:    account1.Owner,
+		Balance:  util.RandomBalance(),
+		Currency: account1.Currency,
+	}
+
+	tests := []struct {
+		name          string
+		paramsURI     api.UpdateAccountRequestURI
+		paramsJSON    api.UpdateAccountRequestJSON
+		buildStub     func(store *mocks.Store)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:       "OK",
+			paramsURI:  api.UpdateAccountRequestURI{ID: account1.ID},
+			paramsJSON: api.UpdateAccountRequestJSON{Balance: account2.Balance},
+			buildStub: func(store *mocks.Store) {
+				store.On("UpdateAccountBalance", mock.Anything, db.UpdateAccountBalanceParams{
+					ID:      account1.ID,
+					Balance: account2.Balance,
+				}).Return(db.Account{
+					ID:       account1.ID,
+					Owner:    account1.Owner,
+					Balance:  account2.Balance,
+					Currency: account1.Currency,
+				}, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+
+				accountResult := bytesToAccount(t, recorder.Body)
+				assert.Equal(t, account2, accountResult)
+			},
+		},
+		{
+			name:       "InvalidID",
+			paramsURI:  api.UpdateAccountRequestURI{ID: 0},
+			paramsJSON: api.UpdateAccountRequestJSON{Balance: account2.Balance},
+			buildStub:  func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:       "NotFound",
+			paramsURI:  api.UpdateAccountRequestURI{ID: account1.ID},
+			paramsJSON: api.UpdateAccountRequestJSON{Balance: account2.Balance},
+			buildStub: func(store *mocks.Store) {
+				store.On("UpdateAccountBalance", mock.Anything, db.UpdateAccountBalanceParams{
+					ID:      account1.ID,
+					Balance: account2.Balance,
+				}).Return(db.Account{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:       "InternalError",
+			paramsURI:  api.UpdateAccountRequestURI{ID: account1.ID},
+			paramsJSON: api.UpdateAccountRequestJSON{Balance: account2.Balance},
+			buildStub: func(store *mocks.Store) {
+				store.On("UpdateAccountBalance", mock.Anything, db.UpdateAccountBalanceParams{
+					ID:      account1.ID,
+					Balance: account2.Balance,
+				}).Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// construct server with mock db.Store
+			mockStore := new(mocks.Store)
+			server := api.NewServer(mockStore)
+			test.buildStub(mockStore)
+
+			// prepare request and response recorder
+			url := fmt.Sprintf("/accounts/%d", test.paramsURI.ID)
+			b, err := json.Marshal(test.paramsJSON)
+			require.NoError(t, err)
+			req := httptest.NewRequest(http.MethodPut, url, bytes.NewReader(b))
+			recorder := httptest.NewRecorder()
+
+			// server
+			server.Srv.Handler.ServeHTTP(recorder, req)
+
+			// check response
+			test.checkResponse(t, recorder)
+			mockStore.AssertExpectations(t)
+		})
+	}
+}
+
 func bytesToAccount(t *testing.T, data *bytes.Buffer) db.Account {
 	t.Helper()
 

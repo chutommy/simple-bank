@@ -10,9 +10,13 @@ func getRouter(s *Server) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 
-	r.POST("/accounts", s.createAccount)
-	r.GET("/accounts/:id", s.getAccountByID)
-	r.GET("/accounts", s.listAccounts)
+	accounts := r.Group("/accounts")
+	{
+		accounts.POST("", s.createAccount)
+		accounts.GET("/:id", s.getAccountByID)
+		accounts.GET("", s.listAccounts)
+		accounts.PUT("/:id", s.updateAccount)
+	}
 
 	return r
 }

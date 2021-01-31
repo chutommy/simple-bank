@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateAccountRequest holds parameters for createAccount handler.
 type CreateAccountRequest struct {
 	Owner    string `json:"owner" binding:"required,ascii"`
 	Currency string `json:"currency" binding:"required,uppercase"`
@@ -39,6 +40,7 @@ func (s *Server) createAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
+// GetAccountByIDRequest holds parameters for getAccountByID handler.
 type GetAccountByIDRequest struct {
 	ID int64 `uri:"id" binding:"required,numeric,min=1"`
 }
@@ -66,6 +68,7 @@ func (s *Server) getAccountByID(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
+// ListAccountsRequest holds parameters for listAccounts handler.
 type ListAccountsRequest struct {
 	PageNum  int32 `form:"page_num" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=1,max=1000"`
@@ -97,4 +100,46 @@ func (s *Server) listAccounts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, accounts)
+}
+
+// UpdateAccountRequestURI holds URI parameters for updateAccount handler.
+type UpdateAccountRequestURI struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+// UpdateAccountRequestJSON holds JSON parameters for updateAccount handler.
+type UpdateAccountRequestJSON struct {
+	Balance int64 `json:"balance" binding:"required,numeric"`
+}
+
+func (s *Server) updateAccount(c *gin.Context) {
+	var reqURI UpdateAccountRequestURI
+	if err := c.ShouldBindUri(&reqURI); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+
+		return
+	}
+
+	var reqJSON UpdateAccountRequestJSON
+	if err := c.ShouldBindJSON(&reqJSON); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+
+		return
+	}
+
+	account, err := s.store.UpdateAccountBalance(c, db.UpdateAccountBalanceParams{
+		ID:      reqURI.ID,
+		Balance: reqJSON.Balance,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, errorResponse(err))
+		} else {
+			c.JSON(http.StatusInternalServerError, errorResponse(err))
+		}
+
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
 }
