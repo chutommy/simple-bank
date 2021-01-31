@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -18,36 +19,42 @@ import (
 )
 
 func TestServer_GetAccountByID(t *testing.T) {
-	account := randomAccount()
+	account := db.Account{
+		ID:       util.RandomInt(1, 2048),
+		Owner:    util.RandomOwner(),
+		Balance:  util.RandomBalance(),
+		Currency: util.RandomCurrency(),
+		// CreatedAt: time.Now(),
+	}
 
 	tests := []struct {
 		name          string
-		accountID     int64
-		buildStub     func(*mocks.Store)
-		checkResponse func(*testing.T, *httptest.ResponseRecorder)
+		apiRequest    api.GetAccountByIDRequest
+		buildStub     func(store *mocks.Store)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name:      "OK",
-			accountID: account.ID,
+			name:       "OK",
+			apiRequest: api.GetAccountByIDRequest{ID: account.ID},
 			buildStub: func(store *mocks.Store) {
 				store.On("GetAccount", mock.Anything, account.ID).Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusOK, recorder.Code)
-				assert.Equal(t, account, bytesToAccount(t, recorder.Body.Bytes()))
+				assert.Equal(t, account, bytesToAccount(t, recorder.Body))
 			},
 		},
 		{
-			name:      "InvalidId",
-			accountID: -1,
-			buildStub: func(store *mocks.Store) {},
+			name:       "InvalidId",
+			apiRequest: api.GetAccountByIDRequest{ID: 0},
+			buildStub:  func(store *mocks.Store) {},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
-			name:      "NotFound",
-			accountID: account.ID,
+			name:       "NotFound",
+			apiRequest: api.GetAccountByIDRequest{ID: account.ID},
 			buildStub: func(store *mocks.Store) {
 				store.On("GetAccount", mock.Anything, account.ID).
 					Return(db.Account{}, sql.ErrNoRows)
@@ -57,8 +64,8 @@ func TestServer_GetAccountByID(t *testing.T) {
 			},
 		},
 		{
-			name:      "InternalError",
-			accountID: account.ID,
+			name:       "InternalError",
+			apiRequest: api.GetAccountByIDRequest{ID: account.ID},
 			buildStub: func(store *mocks.Store) {
 				store.On("GetAccount", mock.Anything, account.ID).Return(db.Account{}, sql.ErrConnDone)
 			},
@@ -76,7 +83,7 @@ func TestServer_GetAccountByID(t *testing.T) {
 			server := api.NewServer(mockStore)
 
 			// construct a request and response recorder
-			url := fmt.Sprintf("/accounts/%d", test.accountID)
+			url := fmt.Sprintf("/accounts/%d", test.apiRequest.ID)
 			req := httptest.NewRequest(http.MethodGet, url, nil)
 			recorder := httptest.NewRecorder()
 
@@ -90,21 +97,11 @@ func TestServer_GetAccountByID(t *testing.T) {
 	}
 }
 
-func randomAccount() db.Account {
-	return db.Account{
-		ID:       util.RandomInt(1, 2048),
-		Owner:    util.RandomOwner(),
-		Balance:  util.RandomBalance(),
-		Currency: util.RandomCurrency(),
-		// CreatedAt: time.Now(),
-	}
-}
-
-func bytesToAccount(t *testing.T, data []byte) db.Account {
+func bytesToAccount(t *testing.T, data *bytes.Buffer) db.Account {
 	t.Helper()
 
 	var a db.Account
-	err := json.Unmarshal(data, &a)
+	err := json.Unmarshal(data.Bytes(), &a)
 	require.NoError(t, err)
 
 	return a

@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createAccountRequest struct {
+type CreateAccountRequest struct {
 	Owner    string `json:"owner" binding:"required,ascii"`
 	Currency string `json:"currency" binding:"required,uppercase"`
 }
 
 func (s *Server) createAccount(c *gin.Context) {
-	var req createAccountRequest
+	var req CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
@@ -39,12 +39,12 @@ func (s *Server) createAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
-type getAccountByIDRequest struct {
+type GetAccountByIDRequest struct {
 	ID int64 `uri:"id" binding:"required,numeric,min=1"`
 }
 
 func (s *Server) getAccountByID(c *gin.Context) {
-	var req getAccountByIDRequest
+	var req GetAccountByIDRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
@@ -66,13 +66,13 @@ func (s *Server) getAccountByID(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
-type listAccountsRequest struct {
+type ListAccountsRequest struct {
 	PageNum  int32 `form:"page_num" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=1,max=1000"`
 }
 
 func (s *Server) listAccounts(c *gin.Context) {
-	var req listAccountsRequest
+	var req ListAccountsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 
