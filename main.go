@@ -29,11 +29,12 @@ func main() {
 			log.Fatal(fmt.Errorf("cannot connect to db: %w", err))
 		}
 		// check db connection
-		for i := 0; i <= 5; i++ { // 5 attemps
+		for i := 0; i <= 5; i++ { // 5 attempts
 			if err := dbConn.Ping(); err != nil {
 				if i == 5 {
-					log.Fatal(err) // failed at last attemp
+					log.Fatal(err) // failed at last attempt
 				}
+
 				time.Sleep(2 * time.Second)
 			} else {
 				break // successfully connection
