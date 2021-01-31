@@ -21,14 +21,14 @@ var (
 
 // Server serves HTTP requests for the banking service.
 type Server struct {
-	store  *db.Store
+	store  db.Store
 	router *gin.Engine
 
 	srv *http.Server
 }
 
 // NewServer constructs a new HTTP Server and setup the routing.
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	s := &Server{store: store}
 	s.router = getRouter(s)
 
