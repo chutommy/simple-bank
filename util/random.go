@@ -11,8 +11,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// randomInt generates random integer in rage of [min, max).
-func randomInt(min, max int64) int64 {
+// RandomInt generates random integer in rage of [min, max).
+func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min)
 }
 
@@ -35,7 +35,7 @@ func RandomOwner() string {
 
 // RandomBalance returns random balance.
 func RandomBalance() int64 {
-	return randomInt(0, 100000)
+	return RandomInt(0, 100000)
 }
 
 // RandomCurrency returns random currency code.
@@ -47,5 +47,5 @@ func RandomCurrency() string {
 
 // RandomAmount returns random amount of money.
 func RandomAmount() int64 {
-	return randomInt(1, 1000)
+	return RandomInt(1, 1000)
 }
