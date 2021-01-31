@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/chutified/simple-bank/api"
 	"github.com/chutified/simple-bank/config"
@@ -26,6 +27,17 @@ func main() {
 		dbConn, err := sql.Open(cfg.DBDriver, cfg.DBSource)
 		if err != nil {
 			log.Fatal(fmt.Errorf("cannot connect to db: %w", err))
+		}
+		// check db connection
+		for i := 0; i <= 5; i++ { // 5 attemps
+			if err := dbConn.Ping(); err != nil {
+				if i == 5 {
+					log.Fatal(err) // failed at last attemp
+				}
+				time.Sleep(2 * time.Second)
+			} else {
+				break // successfully connection
+			}
 		}
 
 		store := db.NewStore(dbConn)
