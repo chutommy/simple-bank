@@ -190,6 +190,118 @@ func TestServer_GetAccountByID(t *testing.T) {
 	}
 }
 
+func TestServer_ListAccounts(t *testing.T) {
+	accounts := []db.Account{
+		{
+			ID:       util.RandomInt(1, 1024),
+			Owner:    util.RandomOwner(),
+			Balance:  util.RandomBalance(),
+			Currency: util.RandomCurrency(),
+		},
+		{
+			ID:       util.RandomInt(1025, 2048),
+			Owner:    util.RandomOwner(),
+			Balance:  util.RandomBalance(),
+			Currency: util.RandomCurrency(),
+		},
+	}
+
+	tests := []struct {
+		name           string
+		accountRequest api.ListAccountsRequest
+		buildStub      func(store *mocks.Store)
+		checkResponse  func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			accountRequest: api.ListAccountsRequest{
+				PageNum:  1,
+				PageSize: 10,
+			},
+			buildStub: func(store *mocks.Store) {
+				store.On("ListAccounts", mock.Anything, db.ListAccountsParams{
+					Limit:  10,
+					Offset: 0,
+				}).Return(accounts, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+
+				accountsResult := bytesToAccounts(t, recorder.Body)
+				assert.Equal(t, accounts, accountsResult)
+			},
+		},
+		{
+			name: "InvalidPageNumber",
+			accountRequest: api.ListAccountsRequest{
+				PageNum:  0,
+				PageSize: 10,
+			},
+			buildStub: func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "NotFound",
+			accountRequest: api.ListAccountsRequest{
+				PageNum:  1,
+				PageSize: 10,
+			},
+			buildStub: func(store *mocks.Store) {
+				store.On("ListAccounts", mock.Anything, db.ListAccountsParams{
+					Limit:  10,
+					Offset: 0,
+				}).Return(nil, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name: "InternalError",
+			accountRequest: api.ListAccountsRequest{
+				PageNum:  1,
+				PageSize: 10,
+			},
+			buildStub: func(store *mocks.Store) {
+				store.On("ListAccounts", mock.Anything, db.ListAccountsParams{
+					Limit:  10,
+					Offset: 0,
+				}).Return(nil, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// construct a server with mock db.Store
+			mockStore := new(mocks.Store)
+			server := api.NewServer(mockStore)
+			test.buildStub(mockStore)
+
+			// prepare request and response recorder
+			url := fmt.Sprintf(
+				"/accounts?page_num=%d&page_size=%d",
+				test.accountRequest.PageNum,
+				test.accountRequest.PageSize,
+			)
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+			recorder := httptest.NewRecorder()
+
+			// serve
+			server.Srv.Handler.ServeHTTP(recorder, req)
+
+			// check result
+			test.checkResponse(t, recorder)
+			mockStore.AssertExpectations(t)
+		})
+	}
+}
+
 func bytesToAccount(t *testing.T, data *bytes.Buffer) db.Account {
 	t.Helper()
 
@@ -198,4 +310,14 @@ func bytesToAccount(t *testing.T, data *bytes.Buffer) db.Account {
 	require.NoError(t, err)
 
 	return a
+}
+
+func bytesToAccounts(t *testing.T, data *bytes.Buffer) []db.Account {
+	t.Helper()
+
+	var aa []db.Account
+	err := json.Unmarshal(data.Bytes(), &aa)
+	require.NoError(t, err)
+
+	return aa
 }
