@@ -1,4 +1,4 @@
-.PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc test server
+.PHONY: postgres createdb dropdb newmigration migrateup migratedown sqlc test server mock
 
 postgres:
 	docker run -p 5432:5432 --env POSTGRES_PASSWORD=simplebankpassword --name postgres12 -d postgres:12-alpine
@@ -21,6 +21,9 @@ migratedown:
 
 sqlc:
 	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
+
+mock:
+	docker run --rm -v $(PWD):/pkg -w /pkg vektra/mockery --case camel --dir db/sqlc --name Store --outpkg mocks --output db/mocks
 
 test:
 	go test -v -cover ./...
