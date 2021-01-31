@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/chutified/simple-bank/api"
@@ -17,6 +18,98 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+func TestServer_CreateAccount(t *testing.T) {
+	account := db.Account{
+		Owner:    util.RandomOwner(),
+		Currency: util.RandomCurrency(),
+	}
+
+	tests := []struct {
+		name          string
+		apiRequest    api.CreateAccountRequest
+		buildStub     func(store *mocks.Store)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			apiRequest: api.CreateAccountRequest{
+				Owner:    account.Owner,
+				Currency: account.Currency,
+			},
+			buildStub: func(store *mocks.Store) {
+				store.On("CreateAccount", mock.Anything, db.CreateAccountParams{
+					Owner:    account.Owner,
+					Balance:  0,
+					Currency: account.Currency,
+				}).Return(db.Account{
+					Owner:    account.Owner,
+					Currency: account.Currency,
+					Balance:  0,
+				}, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+
+				resultAccount := bytesToAccount(t, recorder.Body)
+				assert.Equal(t, account.Owner, resultAccount.Owner)
+				assert.Equal(t, account.Currency, resultAccount.Currency)
+				assert.Equal(t, int64(0), resultAccount.Balance)
+			},
+		},
+		{
+			name: "InvalidCurrency",
+			apiRequest: api.CreateAccountRequest{
+				Owner:    account.Owner,
+				Currency: strings.ToLower(account.Currency),
+			},
+			buildStub: func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalError",
+			apiRequest: api.CreateAccountRequest{
+				Owner:    account.Owner,
+				Currency: account.Currency,
+			},
+			buildStub: func(store *mocks.Store) {
+				store.On("CreateAccount", mock.Anything, db.CreateAccountParams{
+					Owner:    account.Owner,
+					Balance:  0,
+					Currency: account.Currency,
+				}).Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// construct a server with a mock db.Store
+			store := new(mocks.Store)
+			server := api.NewServer(store)
+			test.buildStub(store)
+
+			// construct request and response recorder
+			url := "/accounts"
+			b, err := json.Marshal(test.apiRequest)
+			require.NoError(t, err)
+			req := httptest.NewRequest(http.MethodPost, url, bytes.NewReader(b))
+			recorder := httptest.NewRecorder()
+
+			// server
+			server.Srv.Handler.ServeHTTP(recorder, req)
+
+			// check response
+			test.checkResponse(t, recorder)
+			store.AssertExpectations(t)
+		})
+	}
+}
 
 func TestServer_GetAccountByID(t *testing.T) {
 	account := db.Account{
