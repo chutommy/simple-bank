@@ -19,5 +19,10 @@ func getRouter(s *Server) *gin.Engine {
 		accounts.DELETE("/:id", s.deleteAccount)
 	}
 
+	entries := r.Group("/entries")
+	{
+		entries.GET("/:id", s.getEntryByID)
+	}
+
 	return r
 }
