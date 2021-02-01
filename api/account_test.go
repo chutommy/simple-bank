@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/chutified/simple-bank/api"
 	"github.com/chutified/simple-bank/db/mocks"
@@ -402,6 +403,87 @@ func TestServer_UpdateAccount(t *testing.T) {
 			server.Srv.Handler.ServeHTTP(recorder, req)
 
 			// check response
+			test.checkResponse(t, recorder)
+			mockStore.AssertExpectations(t)
+		})
+	}
+}
+
+func TestServer_DeleteAccount(t *testing.T) {
+	account := db.Account{
+		ID:        util.RandomInt(1, 2048),
+		Owner:     util.RandomOwner(),
+		Balance:   util.RandomBalance(),
+		Currency:  util.RandomCurrency(),
+		CreatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name          string
+		params        api.DeleteAccountRequest
+		buildStub     func(store *mocks.Store)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			params: api.DeleteAccountRequest{ID: account.ID},
+			buildStub: func(store *mocks.Store) {
+				store.On("DeleteAccount", mock.Anything, account.ID).
+					Return(nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+				assert.Equal(t, "null", recorder.Body.String())
+			},
+		},
+		{
+			name:      "InvalidID",
+			params:    api.DeleteAccountRequest{ID: 0},
+			buildStub: func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "NotFound",
+			params: api.DeleteAccountRequest{ID: account.ID},
+			buildStub: func(store *mocks.Store) {
+				store.On("DeleteAccount", mock.Anything, account.ID).
+					Return(sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "InternalError",
+			params: api.DeleteAccountRequest{ID: account.ID},
+			buildStub: func(store *mocks.Store) {
+				store.On("DeleteAccount", mock.Anything, account.ID).
+					Return(sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// construct a server with mock Store
+			mockStore := new(mocks.Store)
+			server := api.NewServer(mockStore)
+			test.buildStub(mockStore)
+
+			// prepare request and response recorder
+			url := fmt.Sprintf("/accounts/%d", test.params.ID)
+			req := httptest.NewRequest(http.MethodDelete, url, nil)
+			recorder := httptest.NewRecorder()
+
+			// server
+			server.Srv.Handler.ServeHTTP(recorder, req)
+
+			// check result
 			test.checkResponse(t, recorder)
 			mockStore.AssertExpectations(t)
 		})

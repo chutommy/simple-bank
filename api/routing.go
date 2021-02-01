@@ -16,6 +16,7 @@ func getRouter(s *Server) *gin.Engine {
 		accounts.GET("/:id", s.getAccountByID)
 		accounts.GET("", s.listAccounts)
 		accounts.PUT("/:id", s.updateAccount)
+		accounts.DELETE("/:id", s.deleteAccount)
 	}
 
 	return r
