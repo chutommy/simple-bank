@@ -34,3 +34,34 @@ func (s *Server) getEntryByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, entry)
 }
+
+type ListEntriesRequest struct {
+	AccountID int64 `json:"account_id"`
+	PageNum   int32 `json:"page_num"`
+	PageSize  int32 `json:"page_size"`
+}
+
+func (s *Server) listEntries(c *gin.Context) {}
+
+type CreateEntryRequest struct {
+	AccountID int64
+	Amount    int64
+}
+
+func (s *Server) createEntry(c *gin.Context) {}
+
+type UpdateEntryRequestURI struct {
+	ID int64
+}
+
+type UpdateEntryRequestJSON struct {
+	Amount int64
+}
+
+func (s *Server) updateEntry(c *gin.Context) {}
+
+type DeleteEntryRequest struct {
+	ID int64
+}
+
+func (s *Server) deleteEntry(c *gin.Context) {}
