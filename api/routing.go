@@ -22,7 +22,7 @@ func getRouter(s *Server) *gin.Engine {
 	entries := r.Group("/entries")
 	{
 		entries.GET("/id/:id", s.getEntryByID)
-		entries.GET("/accountid/:id", s.listEntries)
+		entries.GET("/accountid/:account_id", s.listEntries)
 		entries.POST("", s.createEntry)
 		entries.PUT("/:id", s.updateEntry)
 		entries.DELETE("/:id", s.deleteEntry)

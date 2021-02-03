@@ -114,16 +114,19 @@ func TestServer_ListEntries(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		param         api.ListEntriesRequest
+		paramURI      api.ListEntriesRequestURI
+		paramQuery    api.ListEntriesRequestQuery
 		buildStub     func(store *mocks.Store)
 		checkResponse func(t *testing.T, resp *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
-			param: api.ListEntriesRequest{
+			paramURI: api.ListEntriesRequestURI{
 				AccountID: account.ID,
-				PageNum:   1,
-				PageSize:  10,
+			},
+			paramQuery: api.ListEntriesRequestQuery{
+				PageNum:  1,
+				PageSize: 10,
 			},
 			buildStub: func(store *mocks.Store) {
 				store.On("ListEntries", mock.Anything, db.ListEntriesParams{
@@ -139,35 +142,41 @@ func TestServer_ListEntries(t *testing.T) {
 		},
 		{
 			name: "InvalidID",
-			param: api.ListEntriesRequest{
+			paramURI: api.ListEntriesRequestURI{
 				AccountID: 0,
-				PageNum:   1,
-				PageSize:  10,
+			},
+			paramQuery: api.ListEntriesRequestQuery{
+				PageNum:  1,
+				PageSize: 10,
 			},
 			buildStub: func(store *mocks.Store) {
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
-				assert.Equal(t, http.StatusOK, resp.Code)
+				assert.Equal(t, http.StatusBadRequest, resp.Code)
 			},
 		},
 		{
 			name: "InvalidPageNum",
-			param: api.ListEntriesRequest{
+			paramURI: api.ListEntriesRequestURI{
 				AccountID: account.ID,
-				PageNum:   0,
-				PageSize:  10,
+			},
+			paramQuery: api.ListEntriesRequestQuery{
+				PageNum:  0,
+				PageSize: 10,
 			},
 			buildStub: func(store *mocks.Store) {},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
-				assert.Equal(t, http.StatusOK, resp.Code)
+				assert.Equal(t, http.StatusBadRequest, resp.Code)
 			},
 		},
 		{
 			name: "NotFound",
-			param: api.ListEntriesRequest{
+			paramURI: api.ListEntriesRequestURI{
 				AccountID: account.ID,
-				PageNum:   1,
-				PageSize:  10,
+			},
+			paramQuery: api.ListEntriesRequestQuery{
+				PageNum:  1,
+				PageSize: 10,
 			},
 			buildStub: func(store *mocks.Store) {
 				store.On("ListEntries", mock.Anything, db.ListEntriesParams{
@@ -177,15 +186,17 @@ func TestServer_ListEntries(t *testing.T) {
 				}).Return(nil, sql.ErrNoRows)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
-				assert.Equal(t, http.StatusOK, resp.Code)
+				assert.Equal(t, http.StatusNotFound, resp.Code)
 			},
 		},
 		{
 			name: "InternalError",
-			param: api.ListEntriesRequest{
+			paramURI: api.ListEntriesRequestURI{
 				AccountID: account.ID,
-				PageNum:   1,
-				PageSize:  10,
+			},
+			paramQuery: api.ListEntriesRequestQuery{
+				PageNum:  1,
+				PageSize: 10,
 			},
 			buildStub: func(store *mocks.Store) {
 				store.On("ListEntries", mock.Anything, db.ListEntriesParams{
@@ -195,7 +206,7 @@ func TestServer_ListEntries(t *testing.T) {
 				}).Return(nil, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
-				assert.Equal(t, http.StatusOK, resp.Code)
+				assert.Equal(t, http.StatusInternalServerError, resp.Code)
 			},
 		},
 	}
@@ -209,7 +220,7 @@ func TestServer_ListEntries(t *testing.T) {
 
 			// prepare request and response recorder
 			url := fmt.Sprintf("/entries/accountid/%d?page_num=%d&page_size=%d",
-				test.param.AccountID, test.param.PageNum, test.param.PageSize)
+				test.paramURI.AccountID, test.paramQuery.PageNum, test.paramQuery.PageSize)
 			req := httptest.NewRequest(http.MethodGet, url, nil)
 			resp := httptest.NewRecorder()
 
@@ -485,7 +496,7 @@ func TestServer_DeleteEntry(t *testing.T) {
 
 			// prepare request and response recorder
 			url := fmt.Sprintf("/entries/%d", test.param.ID)
-			req := httptest.NewRequest(http.MethodPut, url, nil)
+			req := httptest.NewRequest(http.MethodDelete, url, nil)
 			resp := httptest.NewRecorder()
 
 			// serve
@@ -512,8 +523,8 @@ func bufferToEntries(t *testing.T, b *bytes.Buffer) []db.Entry {
 	t.Helper()
 
 	var entries []db.Entry
-
-	require.NoError(t, json.Unmarshal(b.Bytes(), &entries))
+	err := json.Unmarshal(b.Bytes(), &entries)
+	require.NoError(t, err)
 
 	return entries
 }
