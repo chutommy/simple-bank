@@ -13,7 +13,7 @@ import (
 	"github.com/chutified/simple-bank/db/mocks"
 	db "github.com/chutified/simple-bank/db/sqlc"
 	"github.com/chutified/simple-bank/util"
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -423,7 +423,7 @@ func TestServer_UpdateEntry(t *testing.T) {
 	}
 }
 
-func TestServer_DeteleEntry(t *testing.T) {
+func TestServer_DeleteEntry(t *testing.T) {
 	entry := db.Entry{
 		ID:        util.RandomInt(1, 1024),
 		AccountID: util.RandomInt(1, 2048),
