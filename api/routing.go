@@ -28,5 +28,10 @@ func getRouter(s *Server) *gin.Engine {
 		entries.DELETE("/:id", s.deleteEntry)
 	}
 
+	transfers := r.Group("/transfers")
+	{
+		transfers.POST("/")
+	}
+
 	return r
 }
