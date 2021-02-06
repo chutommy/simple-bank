@@ -112,7 +112,7 @@ type UpdateEntryRequestURI struct {
 }
 
 type UpdateEntryRequestJSON struct {
-	Amount int64 `json:"amount"`
+	Amount int64 `json:"amount" binding:"required"`
 }
 
 func (s *Server) updateEntry(c *gin.Context) {

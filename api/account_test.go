@@ -347,9 +347,18 @@ func TestServer_UpdateAccount(t *testing.T) {
 			},
 		},
 		{
-			name:       "InvalidID",
+			name:       "InvalidURI",
 			paramsURI:  api.UpdateAccountRequestURI{ID: 0},
 			paramsJSON: api.UpdateAccountRequestJSON{Balance: account2.Balance},
+			buildStub:  func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:       "InvalidJSON",
+			paramsURI:  api.UpdateAccountRequestURI{ID: account1.ID},
+			paramsJSON: api.UpdateAccountRequestJSON{},
 			buildStub:  func(store *mocks.Store) {},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)

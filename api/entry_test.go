@@ -372,9 +372,18 @@ func TestServer_UpdateEntry(t *testing.T) {
 			},
 		},
 		{
-			name:      "InvalidID",
+			name:      "InvalidURI",
 			paramURI:  api.UpdateEntryRequestURI{ID: 0},
 			paramJSON: api.UpdateEntryRequestJSON{Amount: entry2.Amount},
+			buildStub: func(store *mocks.Store) {},
+			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, resp.Code)
+			},
+		},
+		{
+			name:      "InvalidJSON",
+			paramURI:  api.UpdateEntryRequestURI{ID: entry1.ID},
+			paramJSON: api.UpdateEntryRequestJSON{},
 			buildStub: func(store *mocks.Store) {},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, resp.Code)
