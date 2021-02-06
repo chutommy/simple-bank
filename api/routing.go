@@ -30,7 +30,7 @@ func getRouter(s *Server) *gin.Engine {
 
 	transfers := r.Group("/transfers")
 	{
-		transfers.POST("/")
+		transfers.POST("", s.makeTransfer)
 	}
 
 	return r
