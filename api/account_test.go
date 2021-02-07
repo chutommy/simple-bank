@@ -26,6 +26,7 @@ func TestServer_CreateAccount(t *testing.T) {
 		Currency: util.RandomCurrency(),
 	}
 
+	// TODO: add violation of foreign key error case
 	tests := []struct {
 		name          string
 		apiRequest    api.CreateAccountRequest

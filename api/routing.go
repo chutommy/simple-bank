@@ -33,5 +33,13 @@ func getRouter(s *Server) *gin.Engine {
 		transfers.POST("", s.makeTransfer)
 	}
 
+	users := r.Group("/users")
+	{
+		users.GET("", s.getUser)
+		users.POST("", s.createUser)
+		users.PUT("", s.updateUserPassword)
+		users.DELETE("", s.deleteUser)
+	}
+
 	return r
 }
