@@ -5,20 +5,22 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (username, hashed_password, first_name, last_name, email)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (username, hashed_password, first_name, last_name, email, password_modified_at)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING username, hashed_password, first_name, last_name, email, password_modified_at, created_at
 `
 
 type CreateUserParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
-	FirstName      string `json:"first_name"`
-	LastName       string `json:"last_name"`
-	Email          string `json:"email"`
+	Username           string    `json:"username"`
+	HashedPassword     string    `json:"hashed_password"`
+	FirstName          string    `json:"first_name"`
+	LastName           string    `json:"last_name"`
+	Email              string    `json:"email"`
+	PasswordModifiedAt time.Time `json:"password_modified_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -28,6 +30,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
+		arg.PasswordModifiedAt,
 	)
 	var i User
 	err := row.Scan(
@@ -46,10 +49,16 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE
 FROM users
 WHERE username = $1
+  AND hashed_password = $2
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, username string) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, username)
+type DeleteUserParams struct {
+	Username       string `json:"username"`
+	HashedPassword string `json:"hashed_password"`
+}
+
+func (q *Queries) DeleteUser(ctx context.Context, arg DeleteUserParams) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, arg.Username, arg.HashedPassword)
 	return err
 }
 
@@ -77,18 +86,20 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 
 const updateUserPassword = `-- name: UpdateUserPassword :one
 UPDATE users
-SET hashed_password = $2
+SET hashed_password = $3
 WHERE username = $1
+  AND hashed_password = $2
 RETURNING username, hashed_password, first_name, last_name, email, password_modified_at, created_at
 `
 
 type UpdateUserPasswordParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
+	Username         string `json:"username"`
+	HashedPassword   string `json:"hashed_password"`
+	HashedPassword_2 string `json:"hashed_password_2"`
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserPassword, arg.Username, arg.HashedPassword)
+	row := q.db.QueryRowContext(ctx, updateUserPassword, arg.Username, arg.HashedPassword, arg.HashedPassword_2)
 	var i User
 	err := row.Scan(
 		&i.Username,

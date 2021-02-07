@@ -161,13 +161,13 @@ func (_m *Store) DeleteTransfer(ctx context.Context, id int64) error {
 	return r0
 }
 
-// DeleteUser provides a mock function with given fields: ctx, username
-func (_m *Store) DeleteUser(ctx context.Context, username string) error {
-	ret := _m.Called(ctx, username)
+// DeleteUser provides a mock function with given fields: ctx, arg
+func (_m *Store) DeleteUser(ctx context.Context, arg db.DeleteUserParams) error {
+	ret := _m.Called(ctx, arg)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, username)
+	if rf, ok := ret.Get(0).(func(context.Context, db.DeleteUserParams) error); ok {
+		r0 = rf(ctx, arg)
 	} else {
 		r0 = ret.Error(0)
 	}
