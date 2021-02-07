@@ -49,3 +49,8 @@ func RandomCurrency() string {
 func RandomAmount() int64 {
 	return RandomInt(1, 1000)
 }
+
+// RandomEmail generates random email.
+func RandomEmail() string {
+	return randomString(12) + "email.com"
+}
