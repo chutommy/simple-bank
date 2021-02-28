@@ -7,7 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config holds configuration of the database and the server address.
+// Config holds configuration of the database and the server.
+// Another change
 type Config struct {
 	DBDriver      string `mapstructure:"DB_DRIVER"`
 	DBSource      string `mapstructure:"DB_SOURCE"`
@@ -35,7 +36,6 @@ func LoadConfig(path string) (*Config, chan struct{}, error) {
 	viper.WatchConfig()
 
 	upd := make(chan struct{})
-
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("Config file changed:", e.Name)
 		upd <- struct{}{}
