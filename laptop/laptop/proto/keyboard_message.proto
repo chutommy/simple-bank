@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+message Keyboard {
+  enum Layout {
+    UNKNOWN = 0;
+    QWERTY = 1;
+    AZERTY = 2;
+  }
+
+  Layout layout = 1;
+  string material = 2;
+  bool backlit = 3;
+  int32 weight_g = 4;
+}

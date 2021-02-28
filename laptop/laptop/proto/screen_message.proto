@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+message Screen {
+  message Resolution {
+    uint32 width = 1;
+    uint32 height = 2;
+  }
+
+  enum Panel {
+    UNKNOWN = 0;
+    TN = 1;
+    VA = 2;
+    IPS = 3;
+    PLS = 4;
+    AHVA = 5;
+    OLED = 6;
+  }
+
+  float size_inch = 1;
+  Resolution resolution = 2;
+  Panel panel = 3;
+  int32 weight_g = 4;
+  bool touch_screen = 5;
+}

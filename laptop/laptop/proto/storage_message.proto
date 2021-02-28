@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+import "memory_message.proto";
+
+message Storage {
+  enum Driver {
+    UNKNOWN = 0;
+    SSD = 1;
+    HDD = 2;
+  }
+
+  Driver driver = 1;
+  Memory memory = 2;
+}

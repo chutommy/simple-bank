@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+message Memory {
+  enum Unit {
+    UNKNOW = 0;
+    BIT = 1;
+    BYTE = 2;
+    KILOBYTE = 3;
+    MEGABYTE = 4;
+    GIGABYTE = 5;
+    TERABYTE = 6;
+  }
+
+  uint64 capacity = 1;
+  Unit unit = 2;
+}

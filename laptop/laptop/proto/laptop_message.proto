@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+import "screen_message.proto";
+import "keyboard_message.proto";
+import "processor_message.proto";
+import "memory_message.proto";
+import "storage_message.proto";
+import "google/protobuf/timestamp.proto";
+
+message Laptop {
+  string id = 1;
+  string name = 2;
+  string branch = 3;
+
+  CPU cpu = 4;
+  Memory ram = 5;
+  repeated GPU gpus = 6;
+  repeated Storage storage = 8;
+  Screen screen = 7;
+  Keyboard keyboard = 9;
+
+  int32 weight_g = 10;
+  double price_usd = 11;
+  uint32 release_year = 12;
+
+  google.protobuf.Timestamp updated_at = 13;
+}

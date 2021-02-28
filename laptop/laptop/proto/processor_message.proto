@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+
+package pcbook;
+
+import "memory_message.proto";
+
+message CPU {
+  string name = 1;
+  string brand = 2;
+  uint32 cores = 3;
+  uint32 threads = 4;
+  float clock_speed_ghz = 5;
+  float boost_clock_speed_ghz = 6;
+  uint32 tdp_w = 7;
+  uint32 cache_mb = 8;
+}
+
+message GPU {
+  string name = 1;
+  string brand = 2;
+  float clock_speed_ghz = 3;
+  float boost_clock_speed_ghz = 4;
+  Memory memory = 5;
+}
