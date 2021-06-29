@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	db "github.com/chutified/simple-bank/db/sqlc"
+	db "github.com/chutommy/simple-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 

@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"testing"
 
-	db "github.com/chutified/simple-bank/db/sqlc"
-	"github.com/chutified/simple-bank/util"
+	db "github.com/chutommy/simple-bank/db/sqlc"
+	"github.com/chutommy/simple-bank/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

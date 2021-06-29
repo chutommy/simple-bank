@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/chutified/simple-bank/laptop/laptop"
-	"github.com/chutified/simple-bank/laptop/pkg/repo"
+	"github.com/chutommy/simple-bank/laptop/laptop"
+	"github.com/chutommy/simple-bank/laptop/pkg/repo"
 )
 
 type LaptopServer struct {

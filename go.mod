@@ -1,4 +1,4 @@
-module github.com/chutified/simple-bank
+module github.com/chutommy/simple-bank
 
 go 1.15
 

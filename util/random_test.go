@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	"github.com/chutified/simple-bank/util"
+	"github.com/chutommy/simple-bank/util"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"

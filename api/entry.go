@@ -3,7 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
-	db "github.com/chutified/simple-bank/db/sqlc"
+	db "github.com/chutommy/simple-bank/db/sqlc"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

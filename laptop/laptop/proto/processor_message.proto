@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/chutified/simple-bank/laptop/laptop";
+option go_package = "github.com/chutommy/simple-bank/laptop/laptop";
 
 package pcbook;
 

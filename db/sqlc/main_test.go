@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/chutified/simple-bank/config"
-	db "github.com/chutified/simple-bank/db/sqlc"
+	"github.com/chutommy/simple-bank/config"
+	db "github.com/chutommy/simple-bank/db/sqlc"
 	_ "github.com/lib/pq"
 )
 

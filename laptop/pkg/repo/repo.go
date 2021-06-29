@@ -7,7 +7,7 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	"github.com/chutified/simple-bank/laptop/laptop"
+	"github.com/chutommy/simple-bank/laptop/laptop"
 )
 
 var (

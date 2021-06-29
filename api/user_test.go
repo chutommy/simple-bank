@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chutified/simple-bank/api"
-	"github.com/chutified/simple-bank/db/mocks"
-	db "github.com/chutified/simple-bank/db/sqlc"
-	"github.com/chutified/simple-bank/util"
+	"github.com/chutommy/simple-bank/api"
+	"github.com/chutommy/simple-bank/db/mocks"
+	db "github.com/chutommy/simple-bank/db/sqlc"
+	"github.com/chutommy/simple-bank/util"
 	"github.com/stretchr/testify/require"
 )
 

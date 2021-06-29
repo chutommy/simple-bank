@@ -1,4 +1,4 @@
-module github.com/chutified/simple-bank/laptop
+module github.com/chutommy/simple-bank/laptop
 
 go 1.15
 
